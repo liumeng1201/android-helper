@@ -3,10 +3,28 @@ import { showMsg, MsgType } from "./ui";
 import { window, ProgressLocation, Terminal } from 'vscode';
 import { Manager } from "../core";
 
+/**
+ * Build environment variables with JAVA_TOOL_OPTIONS forced to UTF-8.
+ * Fixes garbled Chinese text on Windows when Gradle/Java outputs GBK-encoded text.
+ */
+function buildEnv(): NodeJS.ProcessEnv {
+    const existing = process.env.JAVA_TOOL_OPTIONS || '';
+    // Only add if not already present (avoid duplication)
+    if (existing.includes('-Dfile.encoding=UTF-8')) {
+        return { ...process.env };
+    }
+    return {
+        ...process.env,
+        JAVA_TOOL_OPTIONS: `-Dfile.encoding=UTF-8 ${existing}`.trim(),
+    };
+}
+
 export const exec = async function (manager: Manager, command: string, willLoad: Function, didLoad: Function, cwd?: string) {
     willLoad();
 
-    const options: child_process.ExecOptions = {};
+    const options: child_process.ExecOptions = {
+        env: buildEnv(),
+    };
     if (cwd) {
         options.cwd = cwd;
     }
@@ -45,7 +63,10 @@ export const spawn = async function (manager: Manager, showLog: boolean, command
 
     if (willLoadMsg && willLoadMsg !== "") { showMsg(MsgType.info, willLoadMsg); };
     return new Promise((resolve, reject) => {
-        const spawnOptions: child_process.SpawnOptions = { shell: true };
+        const spawnOptions: child_process.SpawnOptions = {
+            shell: true,
+            env: buildEnv(),
+        };
         if (cwd) {
             spawnOptions.cwd = cwd;
         }
@@ -125,7 +146,10 @@ export const spawnSync = async function (manager: Manager, showLog: boolean, com
 
     if (willLoadMsg && willLoadMsg !== "") { showMsg(MsgType.info, willLoadMsg); };
     return new Promise((resolve, reject) => {
-        const spawnOptions: any = { shell: false };
+        const spawnOptions: any = {
+            shell: false,
+            env: buildEnv(),
+        };
         if (cwd) {
             spawnOptions.cwd = cwd;
         }

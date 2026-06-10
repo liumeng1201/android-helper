@@ -45,6 +45,12 @@ export class GradleService extends Service {
             const spawnOptions: child_process.SpawnOptions = {
                 shell: true,
                 cwd: this.projectPath,
+                env: {
+                    ...process.env,
+                    // Force UTF-8 encoding for Java output to prevent garbled text
+                    // on non-UTF-8 Windows system locales (e.g., Chinese GBK).
+                    JAVA_TOOL_OPTIONS: `-Dfile.encoding=UTF-8 ${process.env.JAVA_TOOL_OPTIONS || ''}`,
+                },
             };
 
             this.buildProcess = child_process.spawn(cmd, [], spawnOptions);
@@ -134,6 +140,10 @@ export class GradleService extends Service {
             const spawnOptions: child_process.SpawnOptions = {
                 shell: true,
                 cwd: this.projectPath,
+                env: {
+                    ...process.env,
+                    JAVA_TOOL_OPTIONS: `-Dfile.encoding=UTF-8 ${process.env.JAVA_TOOL_OPTIONS || ''}`,
+                },
             };
 
             this.buildProcess = child_process.spawn(cmd, [], spawnOptions);
