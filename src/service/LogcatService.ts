@@ -4,8 +4,8 @@ import * as cp from 'child_process';
 import { Manager } from '../core';
 import { parseLogcatLine, formatLogcatLine } from '../utils/logcatParser';
 
-const WORKSPACE_LAST_RUN_APP = 'android-studio-lite.lastRunApplicationId';
-const WORKSPACE_LAST_RUN_SERIAL = 'android-studio-lite.lastRunDeviceSerial';
+const WORKSPACE_LAST_RUN_APP = 'android-helper.lastRunApplicationId';
+const WORKSPACE_LAST_RUN_SERIAL = 'android-helper.lastRunDeviceSerial';
 
 export class LogcatService {
 	private readonly channel: vscode.OutputChannel;
@@ -51,7 +51,7 @@ export class LogcatService {
 
 		if (!applicationId || !serial) {
 			this.channel.clear();
-			this.channel.appendLine('Run the app first (Build & Run from Android Studio Lite). Logcat will show logs for that app.');
+			this.channel.appendLine('Run the app first (Build & Run from Android Helper). Logcat will show logs for that app.');
 			this.show();
 			vscode.window.showInformationMessage('Run the app first, then turn on Logcat to see its logs.');
 			return;
@@ -61,7 +61,7 @@ export class LogcatService {
 		if (!pid) {
 			this.channel.clear();
 			this.channel.appendLine(`App ${applicationId} is not running on device ${serial}.`);
-			this.channel.appendLine('Run the app from Android Studio Lite, then try again.');
+			this.channel.appendLine('Run the app from Android Helper, then try again.');
 			this.show();
 			vscode.window.showWarningMessage('App is not running. Run the app first, then start Logcat.');
 			return;

@@ -313,8 +313,8 @@ export class AndroidService extends Service {
             if (mayFail) {
                 this.manager.output.append("\n⚠️  Some configuration issues detected. Some features may not work correctly.");
                 this.manager.output.append("Please check the setup instructions above or use the command palette:");
-                this.manager.output.append("  - Android Studio Lite: Update SDK Root Path");
-                this.manager.output.append("  - Android Studio Lite: Setup AVD Manager");
+                this.manager.output.append("  - Android Helper: Update SDK Root Path");
+                this.manager.output.append("  - Android Helper: Setup AVD Manager");
             } else {
                 this.manager.output.append("\n✅ Everything looks good! 😎");
             }
@@ -338,8 +338,8 @@ export class AndroidService extends Service {
             .replace(/\n/g, '<br>');
 
         const doc = window.createWebviewPanel(
-            'androidStudioLiteSetup',
-            'Android Studio Lite - Setup Instructions',
+            'androidHelperSetup',
+            'Android Helper - Setup Instructions',
             { viewColumn: 1, preserveFocus: false },
             { enableScripts: false }
         );

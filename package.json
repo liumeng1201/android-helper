@@ -1,12 +1,12 @@
 {
-  "name": "android-studio-lite",
-  "displayName": "Android Studio Lite",
+  "name": "android-helper",
+  "displayName": "Android Helper",
   "description": "Android Dev Companion for Cursor/VS Code - Device management and app lifecycle controls",
   "version": "0.0.10",
   "publisher": "krishna-kudari",
   "repository": {
     "type": "git",
-    "url": "https://github.com/krishna-kudari/android-studio-lite"
+    "url": "https://github.com/liumeng1201/android-helper"
   },
   "icon": "assets/android-studio-macos-transparent.png",
   "engines": {
@@ -34,43 +34,43 @@
   ],
   "activationEvents": [
     "onStartupFinished",
-    "onView:android-studio-lite-avd-dropdown",
-    "onView:android-studio-lite-avd",
-    "onView:android-studio-lite-build-variant",
+    "onView:android-helper-avd-dropdown",
+    "onView:android-helper-avd",
+    "onView:android-helper-build-variant",
     "onLanguage:kotlin",
-    "onCommand:android-studio-lite.avdlist-refresh",
-    "onCommand:android-studio-lite.setup-wizard",
-    "onCommand:android-studio-lite.setup-sdkpath",
-    "onCommand:android-studio-lite.setup-avdmanager",
-    "onCommand:android-studio-lite.setup-emulator"
+    "onCommand:android-helper.avdlist-refresh",
+    "onCommand:android-helper.setup-wizard",
+    "onCommand:android-helper.setup-sdkpath",
+    "onCommand:android-helper.setup-avdmanager",
+    "onCommand:android-helper.setup-emulator"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "android-studio-lite",
-          "title": "Android Studio Lite",
+          "id": "android-helper",
+          "title": "Android Helper",
           "icon": "assets/android-studio.svg"
         }
       ]
     },
     "views": {
-      "android-studio-lite": [
+      "android-helper": [
         {
-          "id": "android-studio-lite-avd-dropdown",
-          "name": "Android Studio Lite",
+          "id": "android-helper-avd-dropdown",
+          "name": "Android Helper",
           "type": "webview",
           "when": "true"
         },
         {
-          "id": "android-studio-lite-avd",
+          "id": "android-helper-avd",
           "name": "Android Virtual Device",
           "contextualTitle": "AVD Manager - Android Virtual Device",
           "when": "true"
         },
         {
-          "id": "android-studio-lite-build-variant",
+          "id": "android-helper-build-variant",
           "name": "Build Variant",
           "contextualTitle": "Build Variant",
           "when": "true"
@@ -79,356 +79,356 @@
     },
     "commands": [
       {
-        "command": "android-studio-lite.selectBuildVariant",
+        "command": "android-helper.selectBuildVariant",
         "title": "Select Build Variant",
         "icon": "$(tools)"
       },
       {
-        "command": "android-studio-lite.runApp",
+        "command": "android-helper.runApp",
         "title": "Run App",
         "icon": "$(play)"
       },
       {
-        "command": "android-studio-lite.stopApp",
+        "command": "android-helper.stopApp",
         "title": "Stop App",
         "icon": "$(debug-stop)"
       },
       {
-        "command": "android-studio-lite.clearData",
+        "command": "android-helper.clearData",
         "title": "Clear Data",
         "icon": "$(trash)"
       },
       {
-        "command": "android-studio-lite.uninstallApp",
+        "command": "android-helper.uninstallApp",
         "title": "Uninstall",
         "icon": "$(trashcan)"
       },
       {
-        "command": "android-studio-lite.startLogcat",
+        "command": "android-helper.startLogcat",
         "title": "Start Logcat",
         "icon": "$(play)"
       },
       {
-        "command": "android-studio-lite.stopLogcat",
+        "command": "android-helper.stopLogcat",
         "title": "Stop Logcat",
         "icon": "$(stop)"
       },
       {
-        "command": "android-studio-lite.pauseLogcat",
+        "command": "android-helper.pauseLogcat",
         "title": "Pause Logcat",
         "icon": "$(debug-pause)"
       },
       {
-        "command": "android-studio-lite.resumeLogcat",
+        "command": "android-helper.resumeLogcat",
         "title": "Resume Logcat",
         "icon": "$(debug-continue)"
       },
       {
-        "command": "android-studio-lite.clearLogcat",
+        "command": "android-helper.clearLogcat",
         "title": "Clear Logcat",
         "icon": "$(clear-all)"
       },
       {
-        "command": "android-studio-lite.setLogLevel",
+        "command": "android-helper.setLogLevel",
         "title": "Set Log Level",
         "icon": "$(filter)"
       },
       {
-        "command": "android-studio-lite.startEmulator",
+        "command": "android-helper.startEmulator",
         "title": "Start Emulator",
         "icon": "$(device-mobile)"
       },
       {
-        "command": "android-studio-lite.selectEmulator",
+        "command": "android-helper.selectEmulator",
         "title": "Select Emulator",
         "icon": "$(device-mobile)"
       },
       {
-        "command": "android-studio-lite.bootEmulator",
+        "command": "android-helper.bootEmulator",
         "title": "Boot Emulator",
         "icon": "$(play)"
       },
       {
-        "command": "android-studio-lite.avdlist-refresh",
+        "command": "android-helper.avdlist-refresh",
         "title": "Refresh AVD List",
         "shortTitle": "Refresh",
         "icon": "$(refresh)"
       },
       {
-        "command": "android-studio-lite.avd-create",
+        "command": "android-helper.avd-create",
         "title": "Create",
         "icon": "$(plus)"
       },
       {
-        "command": "android-studio-lite.avd-launch",
+        "command": "android-helper.avd-launch",
         "title": "Launch",
         "icon": "$(run)"
       },
       {
-        "command": "android-studio-lite.avd-edit",
+        "command": "android-helper.avd-edit",
         "title": "Edit",
         "icon": "$(notebook-edit)"
       },
       {
-        "command": "android-studio-lite.avd-showdir",
+        "command": "android-helper.avd-showdir",
         "title": "Open AVD folder",
         "icon": "$(folder)"
       },
       {
-        "command": "android-studio-lite.avd-showconfigfile",
+        "command": "android-helper.avd-showconfigfile",
         "title": "Open AVD config.ini",
         "icon": "$(preferences-open-settings)"
       },
       {
-        "command": "android-studio-lite.avd-delete",
+        "command": "android-helper.avd-delete",
         "title": "Delete",
         "icon": "$(trash)"
       },
       {
-        "command": "android-studio-lite.setup-wizard",
+        "command": "android-helper.setup-wizard",
         "title": "Run Setup Wizard",
-        "category": "Android Studio Lite",
+        "category": "Android Helper",
         "icon": "$(wrench)"
       },
       {
-        "command": "android-studio-lite.setup-sdkpath",
+        "command": "android-helper.setup-sdkpath",
         "title": "Update SDK Root Path",
-        "category": "Android Studio Lite"
+        "category": "Android Helper"
       },
       {
-        "command": "android-studio-lite.setup-avdmanager",
+        "command": "android-helper.setup-avdmanager",
         "title": "Update AVD Manager Path",
-        "category": "Android Studio Lite"
+        "category": "Android Helper"
       },
       {
-        "command": "android-studio-lite.setup-emulator",
+        "command": "android-helper.setup-emulator",
         "title": "Update Emulator Path",
-        "category": "Android Studio Lite"
+        "category": "Android Helper"
       },
       {
-        "command": "android-studio-lite.avd-select",
+        "command": "android-helper.avd-select",
         "title": "Select Emulator",
         "icon": "$(check)"
       },
       {
-        "command": "android-studio-lite.buildvariant-select",
+        "command": "android-helper.buildvariant-select",
         "title": "Select Build Variant",
         "icon": "$(check)"
       },
       {
-        "command": "android-studio-lite.buildvariant-refresh",
+        "command": "android-helper.buildvariant-refresh",
         "title": "Refresh Build Variants",
         "icon": "$(refresh)"
       },
       {
-        "command": "android-studio-lite.openAndroidProject",
+        "command": "android-helper.openAndroidProject",
         "title": "Open an Android project",
-        "category": "Android Studio Lite",
+        "category": "Android Helper",
         "icon": "$(folder-opened)"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "android-studio-lite.avdlist-refresh",
-          "when": "view == android-studio-lite-avd",
+          "command": "android-helper.avdlist-refresh",
+          "when": "view == android-helper-avd",
           "group": "navigation@2"
         },
         {
-          "command": "android-studio-lite.buildvariant-refresh",
-          "when": "view == android-studio-lite-build-variant",
+          "command": "android-helper.buildvariant-refresh",
+          "when": "view == android-helper-build-variant",
           "group": "navigation@2"
         }
       ],
       "view/item/context": [
         {
-          "command": "android-studio-lite.avd-launch",
-          "when": "view == android-studio-lite-avd && viewItem == avd",
+          "command": "android-helper.avd-launch",
+          "when": "view == android-helper-avd && viewItem == avd",
           "group": "inline@1"
         },
         {
-          "command": "android-studio-lite.avd-edit",
-          "when": "view == android-studio-lite-avd && viewItem == avd",
+          "command": "android-helper.avd-edit",
+          "when": "view == android-helper-avd && viewItem == avd",
           "group": "inline@2"
         },
         {
-          "command": "android-studio-lite.avd-showconfigfile",
-          "when": "view == android-studio-lite-avd",
+          "command": "android-helper.avd-showconfigfile",
+          "when": "view == android-helper-avd",
           "group": "inline@3"
         },
         {
-          "command": "android-studio-lite.avd-showdir",
-          "when": "view == android-studio-lite-avd",
+          "command": "android-helper.avd-showdir",
+          "when": "view == android-helper-avd",
           "group": "inline@4"
         },
         {
-          "command": "android-studio-lite.avd-delete",
-          "when": "view == android-studio-lite-avd && viewItem == avd",
+          "command": "android-helper.avd-delete",
+          "when": "view == android-helper-avd && viewItem == avd",
           "group": "avd-menu@3"
         }
       ],
       "commandPalette": [
         {
-          "command": "android-studio-lite.selectBuildVariant",
+          "command": "android-helper.selectBuildVariant",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.runApp",
+          "command": "android-helper.runApp",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.stopApp",
+          "command": "android-helper.stopApp",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.clearData",
+          "command": "android-helper.clearData",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.uninstallApp",
+          "command": "android-helper.uninstallApp",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.startLogcat",
+          "command": "android-helper.startLogcat",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.stopLogcat",
+          "command": "android-helper.stopLogcat",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.pauseLogcat",
+          "command": "android-helper.pauseLogcat",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.resumeLogcat",
+          "command": "android-helper.resumeLogcat",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.clearLogcat",
+          "command": "android-helper.clearLogcat",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.setLogLevel",
+          "command": "android-helper.setLogLevel",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.startEmulator",
+          "command": "android-helper.startEmulator",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.avdlist-refresh",
+          "command": "android-helper.avdlist-refresh",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.avd-create",
+          "command": "android-helper.avd-create",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.avd-launch",
+          "command": "android-helper.avd-launch",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.avd-edit",
+          "command": "android-helper.avd-edit",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.avd-showdir",
+          "command": "android-helper.avd-showdir",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.avd-showconfigfile",
+          "command": "android-helper.avd-showconfigfile",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.avd-delete",
+          "command": "android-helper.avd-delete",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.setup-sdkpath",
+          "command": "android-helper.setup-sdkpath",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.setup-avdmanager",
+          "command": "android-helper.setup-avdmanager",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.setup-emulator",
+          "command": "android-helper.setup-emulator",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.avd-select",
+          "command": "android-helper.avd-select",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.buildvariant-select",
+          "command": "android-helper.buildvariant-select",
           "when": "true"
         },
         {
-          "command": "android-studio-lite.buildvariant-refresh",
+          "command": "android-helper.buildvariant-refresh",
           "when": "true"
         }
       ]
     },
     "configuration": {
-      "title": "Android Studio Lite",
+      "title": "Android Helper",
       "properties": {
-        "android-studio-lite.adbPath": {
+        "android-helper.adbPath": {
           "type": "string",
           "default": "",
           "description": "Custom path to ADB executable. Leave empty to auto-detect."
         },
-        "android-studio-lite.autoSelectDevice": {
+        "android-helper.autoSelectDevice": {
           "type": "boolean",
           "default": false,
           "description": "Automatically select the first online device when available."
         },
-        "android-studio-lite.devicePollInterval": {
+        "android-helper.devicePollInterval": {
           "type": "number",
           "default": 3000,
           "description": "Device refresh interval in milliseconds (default: 3000ms)."
         },
-        "android-studio-lite.logcatBufferSize": {
+        "android-helper.logcatBufferSize": {
           "type": "number",
           "default": 10000,
           "description": "Maximum number of log lines to buffer in memory (default: 10000)."
         },
-        "android-studio-lite.emulatorPath": {
+        "android-helper.emulatorPath": {
           "type": "string",
           "default": "",
           "description": "Custom path to emulator executable. Leave empty to auto-detect."
         },
-        "android-studio-lite.sdkPath": {
+        "android-helper.sdkPath": {
           "title": "Android SDK Root Path",
           "type": "string",
           "default": "",
           "markdownDescription": "The location of the Android SDK Root Path. If blank, it will attempt to find it from the `ANDROID_SDK_ROOT` or `ANDROID_HOME` environment variable."
         },
-        "android-studio-lite.avdHome": {
+        "android-helper.avdHome": {
           "title": "Android AVD Home Path",
           "type": "string",
           "default": "",
           "markdownDescription": "The location of the Android AVD Home Path. If blank, it will attempt to find it from the `ANDROID_AVD_HOME` environment variable or SDK Default."
         },
-        "android-studio-lite.cmdVersion": {
+        "android-helper.cmdVersion": {
           "title": "Android Command-Line Tools Version",
           "type": "string",
           "default": "latest",
           "description": "Android SDK Command-Line Tools Version"
         },
-        "android-studio-lite.executable": {
+        "android-helper.executable": {
           "title": "AVD Manager executable (optional)",
           "type": "string",
           "default": "avdmanager",
           "description": "AVD Manager executable path"
         },
-        "android-studio-lite.sdkManager": {
+        "android-helper.sdkManager": {
           "title": "Android SDK Manager executable (optional)",
           "type": "string",
           "default": "sdkmanager",
           "description": "Android SDK Manager executable path"
         },
-        "android-studio-lite.emulatorOpt": {
+        "android-helper.emulatorOpt": {
           "title": "Android emulator options (optional)",
           "type": "string",
           "default": "",

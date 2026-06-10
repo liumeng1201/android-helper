@@ -5,7 +5,7 @@ import { AVD } from '../cmd/AVDManager';
 import { generateWebviewHtml } from './webview-html';
 
 export class AVDDropdownViewProvider implements vscode.WebviewViewProvider {
-    public static readonly viewType = 'android-studio-lite-avd-dropdown';
+    public static readonly viewType = 'android-helper-avd-dropdown';
 
     private _view?: vscode.WebviewView;
     private _selectedAVD: AVD | null = null;

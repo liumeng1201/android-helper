@@ -499,7 +499,7 @@ export class ASlAVDSelectorApp extends ASlElement {
         if (!this.isAndroidProject) {
             return html`
 				<div class="container">
-					<h2 class="section-title">Android Studio Lite</h2>
+					<h2 class="section-title">Android Helper</h2>
 					<div class="open-project-placeholder">
 						<p class="message">Open an Android project to run and debug apps.</p>
 						<asl-button
@@ -514,7 +514,7 @@ export class ASlAVDSelectorApp extends ASlElement {
 
         return html`
 			<div class="container">
-				<h2 class="section-title">Android Studio Lite</h2>
+				<h2 class="section-title">Android Helper</h2>
 
 				<div class="dropdown-container">
 					<div class="dropdown-label">Select Device</div>

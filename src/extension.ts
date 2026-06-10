@@ -9,7 +9,7 @@ import { KotlinImportFoldingProvider } from './language/KotlinImportFoldingProvi
 import { LogcatService } from './service/LogcatService';
 
 export async function activate(context: vscode.ExtensionContext) {
-	console.log('Android Studio Lite extension is now active!');
+	console.log('Android Helper extension is now active!');
 
 	// Initialize Manager (core singleton)
 	const manager = Manager.getInstance();
@@ -42,9 +42,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		webviewsController.registerWebviewView(
 			{
-				id: 'android-studio-lite-avd-dropdown',
+				id: 'android-helper-avd-dropdown',
 				fileName: 'avdSelector.html',
-				title: 'Android Studio Lite',
+				title: 'Android Helper',
 			},
 			async (host) => new AVDSelectorProvider(host, context, true),
 		)
@@ -60,38 +60,38 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Register commands
 	subscribe(context, [
-		vscode.commands.registerCommand('android-studio-lite.setup-wizard', async () => {
+		vscode.commands.registerCommand('android-helper.setup-wizard', async () => {
 			await manager.android.initCheck();
 		}),
-		vscode.commands.registerCommand('android-studio-lite.setup-sdkpath', async () => {
+		vscode.commands.registerCommand('android-helper.setup-sdkpath', async () => {
 			await manager.android.updatePathDiag("dir", ConfigItem.sdkPath, "Please select the Android SDK Root Path", "Android SDK Root path updated!", "Android SDK path not specified!");
 		}),
-		vscode.commands.registerCommand('android-studio-lite.setup-avdmanager', async () => {
+		vscode.commands.registerCommand('android-helper.setup-avdmanager', async () => {
 			await manager.android.updatePathDiag("file", ConfigItem.executable, "Please select the AVDManager Path", "AVDManager updated!", "AVDManager path not specified!");
 		}),
-		vscode.commands.registerCommand('android-studio-lite.setup-sdkmanager', async () => {
+		vscode.commands.registerCommand('android-helper.setup-sdkmanager', async () => {
 			await manager.android.updatePathDiag("file", ConfigItem.sdkManager, "Please select the SDKManager Path", "SDKManager updated!", "SDKManager path not specified!");
 		}),
-		vscode.commands.registerCommand('android-studio-lite.setup-emulator', async () => {
+		vscode.commands.registerCommand('android-helper.setup-emulator', async () => {
 			await manager.android.updatePathDiag("file", ConfigItem.emulator, "Please select the Emulator Path", "Emulator path updated!", "Emulator path not specified!");
 		}),
-		vscode.commands.registerCommand('android-studio-lite.startLogcat', async () => {
+		vscode.commands.registerCommand('android-helper.startLogcat', async () => {
 			await logcatService.start();
 		}),
-		vscode.commands.registerCommand('android-studio-lite.stopLogcat', () => {
+		vscode.commands.registerCommand('android-helper.stopLogcat', () => {
 			logcatService.stop();
 		}),
-		vscode.commands.registerCommand('android-studio-lite.pauseLogcat', () => {
+		vscode.commands.registerCommand('android-helper.pauseLogcat', () => {
 			// Pause = stop for this simple implementation
 			logcatService.stop();
 		}),
-		vscode.commands.registerCommand('android-studio-lite.resumeLogcat', async () => {
+		vscode.commands.registerCommand('android-helper.resumeLogcat', async () => {
 			await logcatService.start();
 		}),
-		vscode.commands.registerCommand('android-studio-lite.clearLogcat', () => {
+		vscode.commands.registerCommand('android-helper.clearLogcat', () => {
 			logcatService.clear();
 		}),
-		vscode.commands.registerCommand('android-studio-lite.setLogLevel', async () => {
+		vscode.commands.registerCommand('android-helper.setLogLevel', async () => {
 			logcatService.show();
 			vscode.window.showInformationMessage('Filter by log level is not available. Logcat shows all levels for the running app.');
 		}),

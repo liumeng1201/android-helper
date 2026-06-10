@@ -5,7 +5,7 @@ import { subscribe } from '../module/';
 import { BuildVariantQuickPickItem } from './BuildVariantQuickPick';
 import { MuduleBuildVariant } from '../service/BuildVariantService';
 
-const SELECTED_BUILD_VARIANTS_KEY = 'android-studio-lite.selectedBuildVariants';
+const SELECTED_BUILD_VARIANTS_KEY = 'android-helper.selectedBuildVariants';
 
 export class BuildVariantTreeView {
     readonly provider: BuildVariantTreeDataProvider;
@@ -14,7 +14,7 @@ export class BuildVariantTreeView {
     constructor(context: vscode.ExtensionContext, private manager: Manager) {
         this.provider = new BuildVariantTreeDataProvider(this.manager, context);
 
-        const view = vscode.window.createTreeView('android-studio-lite-build-variant', {
+        const view = vscode.window.createTreeView('android-helper-build-variant', {
             treeDataProvider: this.provider,
             showCollapseAll: true
         });
@@ -24,12 +24,12 @@ export class BuildVariantTreeView {
 
         const subscriptions: vscode.Disposable[] = [
             view,
-            vscode.commands.registerCommand('android-studio-lite.buildvariant-refresh', this.refresh),
-            vscode.commands.registerCommand('android-studio-lite.openAndroidProject', () => {
+            vscode.commands.registerCommand('android-helper.buildvariant-refresh', this.refresh),
+            vscode.commands.registerCommand('android-helper.openAndroidProject', () => {
                 void vscode.commands.executeCommand('workbench.action.files.openFolder');
             }),
 
-            vscode.commands.registerCommand('android-studio-lite.buildvariant-select', async (node) => {
+            vscode.commands.registerCommand('android-helper.buildvariant-select', async (node) => {
                 let moduleName: string | undefined;
                 if (node instanceof BuildVariantTreeItem) {
                     moduleName = node.moduleBuildVariant?.module;
@@ -230,7 +230,7 @@ class OpenAndroidProjectTreeItem extends vscode.TreeItem {
         this.tooltip = 'Open a folder containing an Android project (with gradlew)';
         this.iconPath = new vscode.ThemeIcon('folder-opened');
         this.command = {
-            command: 'android-studio-lite.openAndroidProject',
+            command: 'android-helper.openAndroidProject',
             title: 'Open Folder',
         };
     }
@@ -264,7 +264,7 @@ export class BuildVariantTreeItem extends vscode.TreeItem {
 
         this.tooltip = tooltip;
         this.command = {
-            command: 'android-studio-lite.buildvariant-select',
+            command: 'android-helper.buildvariant-select',
             title: 'Select Build Variant',
             arguments: [this]
         };

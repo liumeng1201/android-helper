@@ -288,7 +288,7 @@ export class AndroidSdkDetector {
 
 3. **Or set manually in VS Code Settings:**
    - Open Settings (Cmd+,)
-   - Search for \`android-studio-lite.sdkPath\`
+   - Search for \`android-helper.sdkPath\`
    - Enter: \`${homeDir}/Library/Android/sdk\``;
         } else if (platform === 'win32') {
             const localAppData = process.env.LOCALAPPDATA || path.join(homeDir, 'AppData', 'Local');
@@ -310,7 +310,7 @@ export class AndroidSdkDetector {
 
 3. **Or set manually in VS Code Settings:**
    - Open Settings (Ctrl+,)
-   - Search for \`android-studio-lite.sdkPath\`
+   - Search for \`android-helper.sdkPath\`
    - Enter: \`${localAppData}\\Android\\Sdk\``;
         } else {
             return `**Linux Setup:**
@@ -332,7 +332,7 @@ export class AndroidSdkDetector {
 
 3. **Or set manually in VS Code Settings:**
    - Open Settings (Ctrl+,)
-   - Search for \`android-studio-lite.sdkPath\`
+   - Search for \`android-helper.sdkPath\`
    - Enter: \`${homeDir}/Android/Sdk\``;
         }
     }

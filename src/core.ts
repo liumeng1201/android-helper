@@ -71,7 +71,7 @@ export class Manager {
         this.avd = new AVDService(this);
         this.buildVariant = new BuildVariantService(this);
         this.gradle = new GradleService(this);
-        this.output = new Output("Android Studio Lite");
+        this.output = new Output("Android Helper");
 
         // DeviceManager — initialized with current ADB path (may be empty if SDK not yet configured)
         this.deviceManager = new DeviceManager(this.resolveAdbPath());
@@ -84,7 +84,7 @@ export class Manager {
      * @param scope ConfigScope
      */
     public async setConfig(key: string, value: any, scope: ConfigScope = ConfigScope.folder) {
-        let config = workspace.getConfiguration('android-studio-lite');
+        let config = workspace.getConfiguration('android-helper');
 
         if (scope === ConfigScope.global) {
             await config.update(key, value, true);
@@ -107,7 +107,7 @@ export class Manager {
     }
 
     public getConfig(): IConfig {
-        let config = workspace.getConfiguration('android-studio-lite');
+        let config = workspace.getConfiguration('android-helper');
 
         //SDK Root
         let sysSdkRoot = process.env.ANDROID_SDK_ROOT ?? "";

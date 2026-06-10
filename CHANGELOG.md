@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the "Android Studio Lite" extension will be documented in this file.
+All notable changes to the "Android Helper" extension will be documented in this file.
 
 ## [0.0.10] - 2026-03-06
 
@@ -10,12 +10,12 @@ All notable changes to the "Android Studio Lite" extension will be documented in
 ## [0.0.9] - 2026-03-06
 
 ### Added
-- **Built-in Logcat:** Logcat is now implemented in the extension (no optional `out/` modules). A dedicated "Logcat" output channel shows logs only for the app you last ran (filtered by PID). Run the app from the AVD selector, then turn on the Logcat toggle to stream that app’s logs.
-- **Last-run persistence:** After a successful Run, the extension stores the app’s applicationId and device serial so Logcat can target the same app and device when you start it.
+- **Built-in Logcat:** Logcat is now implemented in the extension (no optional `out/` modules). A dedicated "Logcat" output channel shows logs only for the app you last ran (filtered by PID). Run the app from the AVD selector, then turn on the Logcat toggle to stream that app's logs.
+- **Last-run persistence:** After a successful Run, the extension stores the app's applicationId and device serial so Logcat can target the same app and device when you start it.
 
 ### Changed
 - **Logcat architecture:** Removed all optional `require()` of `out/commands`, `out/providers`, and `out/services`. Replaced with `LogcatService` in `src/service/LogcatService.ts` using Manager config (ADB path), workspace state (last-run app/device), and existing `logcatParser` for formatting. Start/stop/clear/setLogLevel commands now use this service.
-- **Logcat toggle:** Always visible in the AVD selector. Turning it on starts app-only logcat and shows the Logcat channel; turning it off stops the stream and shows the Android Studio Lite channel.
+- **Logcat toggle:** Always visible in the AVD selector. Turning it on starts app-only logcat and shows the Logcat channel; turning it off stops the stream and shows the Android Helper channel.
 
 ### Fixed
 - "Logcat services not initialized" no longer appears; Logcat is always available in this build.
@@ -24,12 +24,12 @@ All notable changes to the "Android Studio Lite" extension will be documented in
 
 ### Added
 - **Kotlin import folding:** `editor.foldingImportsByDefault` now works for `.kt` files. Added a `FoldingRangeProvider` that marks the import block with `FoldingRangeKind.Imports` so VS Code can auto-fold it (activation: `onLanguage:kotlin`).
-- **"Open an Android project" placeholder:** When the workspace is not an Android project (no Gradle wrapper), the Android Studio Lite webview and Build Variant section show an "Open an Android project" message with an "Open Folder" button (same behavior as File → Open Folder). AVD section is unchanged and always shown.
+- **"Open an Android project" placeholder:** When the workspace is not an Android project (no Gradle wrapper), the Android Helper webview and Build Variant section show an "Open an Android project" message with an "Open Folder" button (same behavior as File → Open Folder). AVD section is unchanged and always shown.
 - **Emulator boot service:** Run flow now uses fire-and-forget emulator spawn (`detached: true`, `stdio: 'ignore'`, `unref()`) so the extension no longer hangs waiting for the emulator process. ADB polling runs in parallel to detect when the device is fully booted before building/installing.
 
 ### Fixed
 - **Module config fetched twice:** Coalesced concurrent `getModuleBuildVariants` calls so multiple callers (bootstrap, onReady, refresh-modules) share a single in-flight promise and Gradle is only run once.
-- **Webview reload on activity bar switch:** Set `retainContextWhenHidden: true` for webview views so the Android Studio Lite panel no longer reloads when switching between Git, Explorer, and Android Studio Lite.
+- **Webview reload on activity bar switch:** Set `retainContextWhenHidden: true` for webview views so the Android Helper panel no longer reloads when switching between Git, Explorer, and Android Helper.
 - **Run stuck on "Starting emulator...":** Emulator process is no longer awaited; serial is resolved by AVD name (`adb devices -l` / `adb emu avd name`), then we wait for `sys.boot_completed` and `init.svc.bootanim` on that serial before running the Gradle install and launching the app.
 - **Gradle error on non-Android project:** Opening a non-Android project no longer shows "Gradle wrapper (gradlew) not found…". `sendModules()` now skips calling Gradle when the workspace is not an Android project and sends an empty module list instead.
 
@@ -45,7 +45,7 @@ All notable changes to the "Android Studio Lite" extension will be documented in
 
 ### Added
 - Logcat toggle button in AVD selector webview for quick access to logcat output
-- Toggle functionality to switch between Logcat and Android Studio Lite output channels
+- Toggle functionality to switch between Logcat and Android Helper output channels
 - Auto-device selection when starting logcat if no device is selected
 - Improved logcat formatting matching Android Studio's output format
 - Toggle button component with macOS-style design
@@ -75,7 +75,7 @@ All notable changes to the "Android Studio Lite" extension will be documented in
 ## [0.0.1] - 2025-01-11
 
 ### Added
-- Initial release of Android Studio Lite
+- Initial release of Android Helper
 - Device management with real-time detection
 - Build variant detection using Gradle init scripts
 - App lifecycle controls (run, stop, uninstall, clear data)

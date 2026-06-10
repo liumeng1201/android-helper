@@ -1,22 +1,22 @@
-# Android Studio Lite
+# Android Helper
 
 You ain't going back to android studio for a while.
 
 <p align="center">
-  <img src="assets/android_studio_lite.png" width="800" alt="Android Studio Lite"/>
+  <img src="assets/android_studio_lite.png" width="800" alt="Android Helper"/>
 </p>
 
 ---
 
 ## Get started in 2 minutes
 
-1. **Install** the extension (Extensions view → search "Android Studio Lite" → Install).
+1. **Install** the extension (Extensions view → search "Android Helper" → Install).
 2. **Set Android SDK path**
   - Set `ANDROID_HOME` (or `ANDROID_SDK_ROOT`) to your SDK root, **or**
-  - Settings → search `android-studio-lite.sdkPath` → set the path.
+  - Settings → search `android-helper.sdkPath` → set the path.
   - Restart the editor after changing env vars.
 3. **Open an Android project** (folder with `gradlew`).
-4. Open the **Android Studio Lite** view in the sidebar (Android icon in the activity bar).
+4. Open the **Android Helper** view in the sidebar (Android icon in the activity bar).
 5. **Select an AVD** in the dropdown (or start an emulator from the AVD view).
 6. **Select a module** (e.g. `app`) in the dropdown.
 7. Click **Run**. The extension builds, installs, and launches the app on the device.
@@ -39,9 +39,9 @@ You ain't going back to android studio for a while.
 
 | What                | How                                                                                                            |
 | ------------------- | -------------------------------------------------------------------------------------------------------------- |
-| SDK path (required) | Set `ANDROID_HOME` or `ANDROID_SDK_ROOT`, or set `android-studio-lite.sdkPath` in Settings.                    |
-| AVD / Emulator      | Auto-detected from SDK. Override with `android-studio-lite.emulator`, `android-studio-lite.avdHome` if needed. |
-| ADB                 | Auto-detected from SDK `platform-tools`. Override with `android-studio-lite.adbPath` if needed.                |
+| SDK path (required) | Set `ANDROID_HOME` or `ANDROID_SDK_ROOT`, or set `android-helper.sdkPath` in Settings.                    |
+| AVD / Emulator      | Auto-detected from SDK. Override with `android-helper.emulator`, `android-helper.avdHome` if needed. |
+| ADB                 | Auto-detected from SDK `platform-tools`. Override with `android-helper.adbPath` if needed.                |
 
 
 After changing environment variables, restart the editor.
@@ -50,7 +50,7 @@ After changing environment variables, restart the editor.
 
 ## Running your app
 
-1. Open the **Android Studio Lite** sidebar view.
+1. Open the **Android Helper** sidebar view.
 2. **Device:** Choose an AVD from the dropdown. If the emulator is not running, the extension can start it when you Run.
 3. **Module:** Choose the app module (e.g. `app`). Variants are loaded from Gradle; pick the one you want (e.g. debug).
 4. Click **Run**.
@@ -61,18 +61,18 @@ After changing environment variables, restart the editor.
 
 ## Logcat (app logs only)
 
-- **Turn Logcat on** via the Logcat toggle in the Android Studio Lite sidebar.
+- **Turn Logcat on** via the Logcat toggle in the Android Helper sidebar.
 - Logcat shows **only the app you last ran** (filtered by PID).
 - Logs stream in the **Logcat** output channel (Output panel → channel dropdown → "Logcat").
 - **Before first use:** Run your app once from the sidebar so the extension knows which app/device to attach to.
-- **Commands:** Start/Stop/Clear via Command Palette (`Android Studio Lite: Start Logcat`, etc.).
+- **Commands:** Start/Stop/Clear via Command Palette (`Android Helper: Start Logcat`, etc.).
 
 ---
 
 ## Build variants & devices
 
-- **Build variant:** Use the Build Variant view in the sidebar or Command Palette: `Android Studio Lite: Select Build Variant`. Variants (e.g. debug, release, flavors) are loaded from your Gradle project.
-- **Devices:** Device list and emulator start are in the AVD section of the sidebar. Command Palette: `Android Studio Lite: Start Emulator`, `Android Studio Lite: Select Device`.
+- **Build variant:** Use the Build Variant view in the sidebar or Command Palette: `Android Helper: Select Build Variant`. Variants (e.g. debug, release, flavors) are loaded from your Gradle project.
+- **Devices:** Device list and emulator start are in the AVD section of the sidebar. Command Palette: `Android Helper: Start Emulator`, `Android Helper: Select Device`.
 
 ---
 
@@ -99,11 +99,10 @@ After changing environment variables, restart the editor.
 
 | Issue                            | What to do                                                                                                                       |
 | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| No devices                       | Run `adb devices`. Ensure USB debugging authorized or emulator running. Check `android-studio-lite.sdkPath` (or `ANDROID_HOME`). |
+| No devices                       | Run `adb devices`. Ensure USB debugging authorized or emulator running. Check `android-helper.sdkPath` (or `ANDROID_HOME`). |
 | Build variants empty             | Open an Android project root (with `gradlew`). Make sure Gradle wrapper is executable.                                           |
-| Logcat shows “Run the app first” | Run the app once from the sidebar so the extension can attach Logcat to that app.                                                |
+| Logcat shows "Run the app first" | Run the app once from the sidebar so the extension can attach Logcat to that app.                                                |
 | Emulator not found               | Install SDK Platform Tools & Emulator (e.g. via Android Studio SDK Manager). Set SDK path.                                       |
 
 
 ---
-

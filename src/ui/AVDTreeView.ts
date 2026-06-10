@@ -16,35 +16,35 @@ export class AVDTreeView {
     constructor(context: vscode.ExtensionContext, private manager: Manager) {
         this.provider = new AVDTreeDataProvider(this.manager);
 
-        const view = vscode.window.createTreeView('android-studio-lite-avd', { treeDataProvider: this.provider, showCollapseAll: true });
+        const view = vscode.window.createTreeView('android-helper-avd', { treeDataProvider: this.provider, showCollapseAll: true });
 
         subscribe(context, [
             view,
 
-            vscode.commands.registerCommand('android-studio-lite.avd-create', async (node) => {
+            vscode.commands.registerCommand('android-helper.avd-create', async (node) => {
                 let path = node?.pkg?.pathRaw ?? undefined;
                 let name = node?.pkg?.description ?? undefined;
                 this.createAVDDiag(path, name).then(() => this.provider.refresh());
             }),
 
 
-            vscode.commands.registerCommand('android-studio-lite.avdlist-refresh', this.refresh),
+            vscode.commands.registerCommand('android-helper.avdlist-refresh', this.refresh),
 
-            vscode.commands.registerCommand('android-studio-lite.avd-launch', async (node) => {
+            vscode.commands.registerCommand('android-helper.avd-launch', async (node) => {
                 let name = node?.avd?.name ?? undefined;
                 this.launchAVDDiag(name).then(() => this.provider.refresh());
             }),
-            vscode.commands.registerCommand('android-studio-lite.avd-edit', async (node) => {
+            vscode.commands.registerCommand('android-helper.avd-edit', async (node) => {
                 let name = node?.avd?.name ?? undefined;
                 this.renameAVDDiag(name).then(() => this.provider.refresh());
             }),
-            vscode.commands.registerCommand('android-studio-lite.avd-showdir', async (node) => {
+            vscode.commands.registerCommand('android-helper.avd-showdir', async (node) => {
                 let { name, path } = node?.avd;
                 if (path !== undefined) {
                     await vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(path));
                 }
             }),
-            vscode.commands.registerCommand('android-studio-lite.avd-showconfigfile', async (node) => {
+            vscode.commands.registerCommand('android-helper.avd-showconfigfile', async (node) => {
                 let { name, path } = node?.avd;
                 if (path !== undefined) {
                     let configPath = nodePath.join(path, "config.ini");
@@ -54,7 +54,7 @@ export class AVDTreeView {
                 }
             }),
 
-            vscode.commands.registerCommand('android-studio-lite.avd-delete', async (node) => {
+            vscode.commands.registerCommand('android-helper.avd-delete', async (node) => {
                 let name = node?.avd?.name ?? undefined;
                 this.deleteAVDDiag(name).then(() => this.provider.refresh());
             })
@@ -63,8 +63,8 @@ export class AVDTreeView {
     }
 
     create = async () => {
-        console.log("call android-studio-lite.avd-create");
-        vscode.window.createWebviewPanel('android-studio-lite-avdCreate', "Create New AVD", vscode.ViewColumn.Beside);
+        console.log("call android-helper.avd-create");
+        vscode.window.createWebviewPanel('android-helper-avdCreate', "Create New AVD", vscode.ViewColumn.Beside);
     };
 
     refresh = async () => {

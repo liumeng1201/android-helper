@@ -12,7 +12,7 @@ import { showMsg, MsgType } from '../module/ui';
  * Workspace state key used to persist the detected Android project path
  * so it survives VS Code restarts.
  */
-const PROJECT_PATH_KEY = 'android-studio-lite.projectPath';
+const PROJECT_PATH_KEY = 'android-helper.projectPath';
 
 export interface MuduleBuildVariant extends Module {
     module: string;

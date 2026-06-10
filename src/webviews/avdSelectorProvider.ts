@@ -182,7 +182,7 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
 
             // Get selected variant (use first one as default)
             const selectedVariants = this.context.workspaceState.get<Record<string, string>>(
-                'android-studio-lite.selectedBuildVariants',
+                'android-helper.selectedBuildVariants',
                 {}
             );
             const variantName = selectedVariants[moduleName] || module.variants[0].name;
@@ -321,13 +321,13 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
         try {
             if (active) {
                 // Start logcat and show logcat output channel
-                await commands.executeCommand('android-studio-lite.startLogcat');
-                // Hide Android Studio Lite output channel
+                await commands.executeCommand('android-helper.startLogcat');
+                // Hide Android Helper output channel
                 this.manager.output.hide();
             } else {
-                // Stop logcat and show Android Studio Lite output channel
-                await commands.executeCommand('android-studio-lite.stopLogcat');
-                // Show Android Studio Lite output channel
+                // Stop logcat and show Android Helper output channel
+                await commands.executeCommand('android-helper.stopLogcat');
+                // Show Android Helper output channel
                 this.manager.output.show();
             }
             // Notify webview of state change
