@@ -106,3 +106,7 @@ After changing environment variables, restart the editor.
 
 
 ---
+
+## Acknowledgements
+
+This project is an improved fork of [**android-studio-lite**](https://github.com/krishna-kudari/android-studio-lite) by [krishna-kudari](https://github.com/krishna-kudari). Special thanks to the original author for creating this excellent foundation. This fork builds upon that work with enhancements and adjustments for personal use.
