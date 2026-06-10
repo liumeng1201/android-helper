@@ -15,6 +15,15 @@ export async function activate(context: vscode.ExtensionContext) {
 	const manager = Manager.getInstance();
 	await manager.android.initCheck();
 
+	// Provide ExtensionContext to BuildVariantService for project path persistence
+	manager.buildVariant.setContext(context);
+
+	// Start ADB device tracking (non-blocking)
+	manager.startDeviceManager();
+
+	// Dispose DeviceManager when extension deactivates
+	context.subscriptions.push(manager.deviceManager);
+
 	// Kotlin: provide import folding ranges so editor.foldingImportsByDefault works
 	context.subscriptions.push(
 		vscode.languages.registerFoldingRangeProvider(

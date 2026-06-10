@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import * as child_process from 'child_process';
 import { Service } from "./Service";
 import { Manager } from "../core";
@@ -9,14 +8,18 @@ import { showMsg, MsgType } from '../module/ui';
 export class GradleService extends Service {
     readonly manager: Manager;
     readonly gradle: GradleExecutable;
-    readonly workspacePath: string;
+
+    /** Returns the effective project root (auto-detected subdirectory or workspace root). */
+    private get projectPath(): string {
+        return this.manager.buildVariant.getProjectPath();
+    }
+
     private buildProcess: child_process.ChildProcess | null = null;
 
     constructor(manager: Manager) {
         super(manager);
         this.manager = manager;
         this.gradle = new GradleExecutable(manager);
-        this.workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? "";
     }
 
     public async installVariant(
@@ -24,15 +27,8 @@ export class GradleService extends Service {
         onOutput?: (output: string) => void,
         cancellationToken?: vscode.CancellationToken
     ): Promise<void> {
-        if (!this.workspacePath) {
-            throw new Error("No workspace folder found");
-        }
-
-        // Check if gradlew exists
-        const gradlewPath = path.join(this.workspacePath, process.platform === 'win32' ? 'gradlew.bat' : 'gradlew');
-        const fs = await import('fs');
-        if (!fs.existsSync(gradlewPath)) {
-            throw new Error("Gradle wrapper not found. Please ensure you are in an Android project root.");
+        if (!this.projectPath) {
+            throw new Error("No Android project found. Please open a folder containing an Android project.");
         }
 
         // Get command from executable
@@ -48,7 +44,7 @@ export class GradleService extends Service {
 
             const spawnOptions: child_process.SpawnOptions = {
                 shell: true,
-                cwd: this.workspacePath,
+                cwd: this.projectPath,
             };
 
             this.buildProcess = child_process.spawn(cmd, [], spawnOptions);
@@ -120,15 +116,8 @@ export class GradleService extends Service {
         onOutput?: (output: string) => void,
         cancellationToken?: vscode.CancellationToken
     ): Promise<void> {
-        if (!this.workspacePath) {
-            throw new Error("No workspace folder found");
-        }
-
-        // Check if gradlew exists
-        const gradlewPath = path.join(this.workspacePath, process.platform === 'win32' ? 'gradlew.bat' : 'gradlew');
-        const fs = await import('fs');
-        if (!fs.existsSync(gradlewPath)) {
-            throw new Error("Gradle wrapper not found. Please ensure you are in an Android project root.");
+        if (!this.projectPath) {
+            throw new Error("No Android project found. Please open a folder containing an Android project.");
         }
 
         // Get command from executable
@@ -144,7 +133,7 @@ export class GradleService extends Service {
 
             const spawnOptions: child_process.SpawnOptions = {
                 shell: true,
-                cwd: this.workspacePath,
+                cwd: this.projectPath,
             };
 
             this.buildProcess = child_process.spawn(cmd, [], spawnOptions);

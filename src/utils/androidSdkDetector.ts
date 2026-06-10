@@ -448,6 +448,52 @@ ${path.join(sdkPath, 'cmdline-tools', 'latest', 'bin', process.platform === 'win
     }
 
     /**
+     * Recursively search for Android projects (gradlew files) in subdirectories.
+     * Excludes node_modules, .git, build and other non-project directories.
+     * @param rootPath The workspace root to search from
+     * @param maxDepth Maximum recursion depth (default: 3)
+     * @returns Array of absolute paths to Android project directories found
+     */
+    public static findAndroidProjectPaths(rootPath: string, maxDepth: number = 3): string[] {
+        if (!rootPath || !fs.existsSync(rootPath)) return [];
+
+        const results: string[] = [];
+        const excludedDirs = new Set([
+            'node_modules', '.git', 'build', '.gradle', 'out', 'dist',
+            'target', 'bin', 'obj', '.idea', '.vscode', '.cursor',
+            'gradle', 'gradle/wrapper',
+        ]);
+
+        function walk(dir: string, depth: number): void {
+            if (depth > maxDepth) return;
+
+            // Check if this directory has a gradlew
+            const gradlewName = process.platform === 'win32' ? 'gradlew.bat' : 'gradlew';
+            const gradlewPath = path.join(dir, gradlewName);
+            if (fs.existsSync(gradlewPath)) {
+                results.push(dir);
+                // Don't recurse deeper once we find a project
+                return;
+            }
+
+            try {
+                const entries = fs.readdirSync(dir, { withFileTypes: true });
+                for (const entry of entries) {
+                    if (!entry.isDirectory()) continue;
+                    if (excludedDirs.has(entry.name)) continue;
+                    if (entry.name.startsWith('.')) continue;
+                    walk(path.join(dir, entry.name), depth + 1);
+                }
+            } catch {
+                // Permission denied or other errors — skip
+            }
+        }
+
+        walk(rootPath, 0);
+        return results;
+    }
+
+    /**
      * Checks if gradlew exists in the workspace
      */
     public static checkGradleWrapper(workspacePath: string): { exists: boolean; path: string; error?: string } {

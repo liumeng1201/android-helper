@@ -2,6 +2,7 @@ import * as path from "path";
 import { workspace, Disposable } from 'vscode';
 import { AVDService } from './service/AVDService';
 import { AndroidService } from './service/AndroidService';
+import { DeviceManager } from './device/DeviceManager';
 
 import { Output } from "./module/ui";
 import { Cache } from "./module/cache";
@@ -61,6 +62,7 @@ export class Manager {
     readonly gradle: GradleService;
     readonly output: Output;
     readonly cache: Cache;
+    readonly deviceManager: DeviceManager;
 
     private constructor() {
         this.cache = new Cache();
@@ -70,6 +72,9 @@ export class Manager {
         this.buildVariant = new BuildVariantService(this);
         this.gradle = new GradleService(this);
         this.output = new Output("Android Studio Lite");
+
+        // DeviceManager — initialized with current ADB path (may be empty if SDK not yet configured)
+        this.deviceManager = new DeviceManager(this.resolveAdbPath());
     }
 
     /**
@@ -162,6 +167,28 @@ export class Manager {
                 return Platform.macOS;
         }
         return Platform.window;
+    }
+
+    /** Resolve the ADB executable path from current configuration. */
+    private resolveAdbPath(): string {
+        const config = this.getConfig();
+        if (!config.sdkPath) return '';
+        return path.join(
+            config.platformToolsPath,
+            process.platform === 'win32' ? 'adb.exe' : 'adb',
+        );
+    }
+
+    /**
+     * Start the DeviceManager (adb tracking).
+     * Safe to call multiple times — starts only if ADB is available and not already running.
+     */
+    public startDeviceManager(): void {
+        const adbPath = this.resolveAdbPath();
+        if (adbPath) {
+            this.deviceManager.setAdbPath(adbPath);
+            this.deviceManager.start();
+        }
     }
 
     private _windows: { [key: string]: Disposable } = {};

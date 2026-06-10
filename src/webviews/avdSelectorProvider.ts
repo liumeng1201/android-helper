@@ -3,16 +3,18 @@ import { Disposable as VSCodeDisposable, window, commands, workspace, ProgressLo
 import type { WebviewProvider, WebviewHost } from './webviewProvider.js';
 import type { WebviewState } from './protocol.js';
 import { Manager } from '../core';
-import type { AVD } from '../cmd/AVDManager';
 import type { MuduleBuildVariant } from '../service/BuildVariantService';
+import type { DeviceInfo } from '../device/DeviceManager';
 import { EmulatorBootService } from '../device/EmulatorBootService.js';
 import { LogcatService } from '../service/LogcatService.js';
 
 export interface AVDSelectorWebviewState extends WebviewState {
-    avds?: AVD[];
-    selectedAVD?: string;
+    devices?: DeviceInfo[];
+    selectedDeviceSerial?: string;
     modules?: MuduleBuildVariant[];
     selectedModule?: string;
+    /** The resolved Android project path (may be a subdirectory). */
+    projectPath?: string;
     /** When false, show "Open an Android project" placeholder. */
     isAndroidProject?: boolean;
     /** When false, logcat modules are not available; hide Logcat toggle. */
@@ -36,10 +38,17 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
                 const isAndroidProject = this.manager.buildVariant.isAndroidProject();
                 await this.host.notify('update-android-project-state', {
                     isAndroidProject,
+                    projectPath: isAndroidProject
+                        ? this.manager.buildVariant.getProjectPath()
+                        : undefined,
                 });
                 if (isAndroidProject) {
                     await this.sendModules();
                 }
+            }),
+            // Listen for device list changes from DeviceManager
+            this.manager.deviceManager.onDeviceListChanged(async (devices) => {
+                await this.host.notify('update-devices', { devices });
             }),
         );
     }
@@ -52,10 +61,6 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
     }
 
     async includeBootstrap(): Promise<AVDSelectorWebviewState> {
-        const avds = await this.manager.avd.getAVDList();
-        const avdList = avds || [];
-        const selectedAVD = avdList.length > 0 ? avdList[0].name : undefined;
-
         const isAndroidProject = this.manager.buildVariant.isAndroidProject();
 
         // Get modules and filter for application type (only when Android project)
@@ -72,17 +77,27 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
 
         // Check current logcat state
         try {
-            // Try to check if logcat is running by checking if Logcat output channel exists and is visible
-            // This is a best-effort check since we don't have direct access to LogcatProvider
-            this.logcatActive = false; // Default to false, will be updated when user toggles
+            this.logcatActive = false;
         } catch (error) {
             console.error('[AVDSelectorProvider] Error checking logcat state:', error);
         }
 
+        // Get current device list from DeviceManager
+        const devices = this.manager.deviceManager.getDevices();
+
+        // Auto-select first connected device
+        const connectedDevice = devices.find(d => d.state === 'device');
+
+        // Get resolved project path
+        const projectPath = this.manager.buildVariant.isAndroidProject()
+            ? this.manager.buildVariant.getProjectPath()
+            : undefined;
+
         return {
             ...this.host.baseWebviewState,
-            avds: avdList,
-            selectedAVD,
+            devices,
+            selectedDeviceSerial: connectedDevice?.serial,
+            projectPath,
             modules,
             selectedModule,
             isAndroidProject,
@@ -92,9 +107,9 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
 
     async onReady(): Promise<void> {
         console.log('[AVDSelector] Ready');
-        // Send initial AVD list and modules
-        await this.sendAVDList();
+        // Send initial modules and device list
         await this.sendModules();
+        await this.sendDeviceList();
         // Send initial logcat state
         await this.host.notify('logcat-state-changed', { active: this.logcatActive });
     }
@@ -104,14 +119,14 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
             void commands.executeCommand('workbench.action.files.openFolder');
             return;
         }
-        if (e.type === 'refresh-avds') {
-            void this.sendAVDList();
-        } else if (e.type === 'refresh-modules') {
+        if (e.type === 'refresh-modules') {
             void this.sendModules();
-        } else if (e.type === 'select-avd') {
-            const { avdName } = e.params || {};
-            if (avdName) {
-                void this.host.notify('avd-selected', { avdName });
+        } else if (e.type === 'refresh-devices') {
+            void this.sendDeviceList();
+        } else if (e.type === 'select-device') {
+            const { deviceSerial, avdName } = e.params || {};
+            if (deviceSerial) {
+                void this.host.notify('device-selected', { deviceSerial, avdName });
             }
         } else if (e.type === 'select-module') {
             const { moduleName } = e.params || {};
@@ -124,13 +139,20 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
             void this.handleCancelBuild(e.params);
         } else if (e.type === 'toggle-logcat') {
             void this.handleToggleLogcat(e.params);
+        } else if (e.type === 'select-project-path') {
+            const { projectPath } = e.params || {};
+            if (projectPath && typeof projectPath === 'string') {
+                this.manager.buildVariant.setProjectPath(projectPath);
+                // Re-send modules since the project changed
+                void this.sendModules();
+            }
         }
     }
 
     private async handleRunApp(params: any): Promise<void> {
-        const { avdName, moduleName, cancellationToken } = params || {};
-        if (!avdName || !moduleName) {
-            await this.host.notify('build-failed', { error: 'AVD and Module must be selected' });
+        const { deviceSerial, avdName, moduleName, cancellationToken } = params || {};
+        if (!deviceSerial || !moduleName) {
+            await this.host.notify('build-failed', { error: 'Device and Module must be selected' });
             return;
         }
 
@@ -143,7 +165,7 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
         try {
             await this.host.notify('build-started', { cancellationToken });
 
-            const adbPath = this.getAdbPath();
+            const adbPath = this.manager.deviceManager.getAdbPath();
             const emulatorPath = this.manager.android.getEmulator();
             if (!adbPath || !emulatorPath) {
                 await this.host.notify('build-failed', { error: 'SDK path or emulator not configured. Run Setup Wizard.' });
@@ -189,17 +211,22 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
                     });
 
                     try {
-                        // Fire-and-forget launch (if needed) + ADB poll until fully booted
-                        const bootService = new EmulatorBootService(
-                            adbPath,
-                            emulatorPath,
-                            { appendLine: (line) => this.manager.output.append(line) },
-                        );
-                        const serial = await bootService.launchAndWait(
-                            avdName,
-                            progress,
-                            cancelToken.token,
-                        );
+                        // Resolve the target device serial
+                        const serial = deviceSerial;
+
+                        // If this is an emulator (has avdName), ensure it's running and fully booted
+                        if (avdName) {
+                            const bootService = new EmulatorBootService(
+                                this.manager.deviceManager,
+                                emulatorPath,
+                                { appendLine: (line) => this.manager.output.append(line) },
+                            );
+                            await bootService.launchAndWait(
+                                avdName,
+                                progress,
+                                cancelToken.token,
+                            );
+                        }
 
                         if (cancelToken.token.isCancellationRequested) {
                             throw new Error('Build was cancelled');
@@ -235,7 +262,7 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
                             await this.launchApp(applicationId, serial);
                             LogcatService.setLastRun(this.context, applicationId, serial);
                             progress.report({ increment: 100, message: 'App launched successfully!' });
-                            window.showInformationMessage(`App installed and launched on ${avdName}`);
+                            window.showInformationMessage(`App installed and launched on ${deviceSerial}`);
                         } catch (launchError: any) {
                             console.error('[AVDSelectorProvider] Error launching app:', launchError);
                             // Don't fail the whole process if launch fails
@@ -315,90 +342,50 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
     }
 
     private async ensureAVDRunning(avdName: string, cancellationToken: any): Promise<void> {
-        // Check if AVD is already running by checking ADB devices
-        const isRunning = await this.checkIfAVDRunning(avdName);
-
-        if (isRunning) {
-            console.log(`[AVDSelectorProvider] AVD ${avdName} is already running, skipping launch`);
+        // Check if AVD is already running via DeviceManager
+        const existing = this.manager.deviceManager.findDeviceByAvdName(avdName);
+        if (existing) {
+            console.log(`[AVDSelectorProvider] AVD ${avdName} is already running as ${existing.serial}, skipping launch`);
             return;
         }
 
         console.log(`[AVDSelectorProvider] AVD ${avdName} is not running, launching emulator...`);
 
         // Launch the emulator with progress notification
-        try {
-            await window.withProgress(
-                {
-                    location: ProgressLocation.Notification,
-                    title: `Booting emulator: ${avdName}`,
-                    cancellable: false,
-                },
-                async (progress) => {
-                    try {
-                        progress.report({ increment: 0, message: 'Starting emulator...' });
-                        // Launch emulator (this spawns and returns immediately)
-                        await this.manager.avd.launchEmulator(avdName);
+        await window.withProgress(
+            {
+                location: ProgressLocation.Notification,
+                title: `Booting emulator: ${avdName}`,
+                cancellable: true,
+            },
+            async (progress, token) => {
+                progress.report({ increment: 0, message: 'Starting emulator...' });
+                // Launch emulator (this spawns and returns immediately)
+                await this.manager.avd.launchEmulator(avdName);
 
-                        // Wait for device to be ready (poll for up to 60 seconds)
-                        progress.report({ increment: 30, message: 'Waiting for device...' });
-                        let deviceFound = false;
-                        for (let i = 0; i < 60; i++) {
-                            if (cancellationToken.isCancellationRequested) {
-                                throw new Error('Build was cancelled');
-                            }
+                // Wait for device to be ready via DeviceManager (event-driven)
+                progress.report({ increment: 30, message: 'Waiting for device...' });
 
-                            await new Promise(resolve => setTimeout(resolve, 1000));
-                            const running = await this.checkIfAVDRunning(avdName);
-                            if (running) {
-                                deviceFound = true;
-                                break;
-                            }
-                            progress.report({
-                                increment: 30 + (i / 60) * 40,
-                                message: `Waiting for device... (${i + 1}/60)`,
-                            });
-                        }
+                const timeoutMs = 120000; // 2 minutes
 
-                        if (!deviceFound) {
-                            throw new Error('Emulator started but device not detected. Please check if emulator is running.');
-                        }
-                        progress.report({ increment: 100, message: 'Device ready!' });
-                        // Small delay to ensure notification closes properly
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                    } catch (error: any) {
-                        // Re-throw to be caught by outer try-catch
-                        throw error;
+                try {
+                    await this.manager.deviceManager.waitForDevice(avdName, timeoutMs);
+                    progress.report({ increment: 100, message: 'Device ready!' });
+                } catch (error: any) {
+                    if (error.message?.includes('was cancelled') || token.isCancellationRequested) {
+                        throw new Error('Build was cancelled');
                     }
+                    throw new Error(`Emulator started but device not detected. ${error.message}`);
                 }
-            );
-        } catch (error: any) {
-            console.error('[AVDSelectorProvider] Error launching emulator:', error);
-            // Check if error is because emulator is already running
-            const errorMessage = error?.message || error?.toString() || String(error);
-            if (errorMessage.includes('Running multiple emulators') || errorMessage.includes('already running')) {
-                console.log('[AVDSelectorProvider] Emulator appears to be already running, checking again...');
-                // Wait a moment and check again
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                const isRunningNow = await this.checkIfAVDRunning(avdName);
-                if (isRunningNow) {
-                    console.log('[AVDSelectorProvider] Emulator is now detected as running');
-                    return; // Success - emulator is running
-                }
-            }
-            throw error;
-        }
+            },
+        );
     }
 
     private async launchApp(applicationId: string, serial?: string): Promise<void> {
-        const config = this.manager.getConfig();
-        const sdkPath = config.sdkPath;
-        if (!sdkPath) {
+        const adbPath = this.manager.deviceManager.getAdbPath();
+        if (!adbPath) {
             throw new Error('SDK path not configured');
         }
-
-        const path = await import('path');
-        const platformToolsPath = path.join(sdkPath, 'platform-tools');
-        const adbPath = path.join(platformToolsPath, process.platform === 'win32' ? 'adb.exe' : 'adb');
 
         console.log(`[AVDSelectorProvider] Launching app with applicationId: ${applicationId}`);
 
@@ -506,49 +493,9 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
         return errorMessage;
     }
 
-    /** Returns the first running emulator serial (e.g. "emulator-5554") or null. */
-    private async getRunningEmulatorSerial(): Promise<string | null> {
-        try {
-            const adbPath = this.getAdbPath();
-            if (!adbPath) return null;
-
-            const { exec } = await import('child_process');
-            const { promisify } = await import('util');
-            const execAsync = promisify(exec);
-
-            const result = await execAsync(`"${adbPath}" devices`);
-            const output = result.stdout;
-
-            const lines = output.split('\n').filter((line: string) => {
-                const trimmed = line.trim();
-                return trimmed && !trimmed.startsWith('List of devices');
-            });
-
-            for (const line of lines) {
-                const parts = line.trim().split(/\s+/);
-                if (parts.length >= 2 && parts[0].startsWith('emulator-') && parts[1] === 'device') {
-                    console.log(`[AVDSelectorProvider] Found running emulator device: ${parts[0]}`);
-                    return parts[0];
-                }
-            }
-            return null;
-        } catch {
-            return null;
-        }
-    }
-
-    private getAdbPath(): string | null {
-        const config = this.manager.getConfig();
-        const sdkPath = config.sdkPath;
-        if (!sdkPath) return null;
-        const path = require('path');
-        const platformToolsPath = path.join(sdkPath, 'platform-tools');
-        return path.join(platformToolsPath, process.platform === 'win32' ? 'adb.exe' : 'adb');
-    }
-
-    private async checkIfAVDRunning(_avdName: string): Promise<boolean> {
-        const serial = await this.getRunningEmulatorSerial();
-        return serial !== null;
+    private async sendDeviceList(): Promise<void> {
+        const devices = this.manager.deviceManager.getDevices();
+        await this.host.notify('update-devices', { devices });
     }
 
     async onRefresh?(force?: boolean): Promise<void> {
@@ -556,14 +503,8 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
             await this.manager.avd.getAVDList(true);
             this.manager.buildVariant.clearCache();
         }
-        await this.sendAVDList();
         await this.sendModules();
-    }
-
-    private async sendAVDList(): Promise<void> {
-        const avds = await this.manager.avd.getAVDList();
-        const avdList = avds || [];
-        await this.host.notify('update-avds', { avds: avdList });
+        await this.sendDeviceList();
     }
 
     private async sendModules(): Promise<void> {

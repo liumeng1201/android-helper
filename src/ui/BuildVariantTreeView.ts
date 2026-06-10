@@ -58,14 +58,18 @@ export class BuildVariantTreeView {
     }
 
     private setupFileWatcher(context: vscode.ExtensionContext) {
-        const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-        if (!workspacePath) {
+        // Use the resolved project path from BuildVariantService (auto-detected subdirectory)
+        const projectPath = this.manager.buildVariant.getProjectPath()
+            || vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+            || '';
+
+        if (!projectPath) {
             return;
         }
 
         // Watch for build.gradle and build.gradle.kts files
         const pattern = new vscode.RelativePattern(
-            workspacePath,
+            projectPath,
             '**/{build.gradle,build.gradle.kts}'
         );
 

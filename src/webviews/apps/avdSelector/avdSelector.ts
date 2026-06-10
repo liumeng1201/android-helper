@@ -22,15 +22,15 @@ const progressSpinnerIcon = `<svg width="16" height="16" viewBox="0 0 16 16" fil
 <rect x="1.63599" y="3.05025" width="2" height="5" rx="1" transform="rotate(-45 1.63599 3.05025)" fill="white" fill-opacity="0.7"/>
 </svg>`;
 
-interface AVD {
-    name: string;
-    basedOn: string;
-    device: string;
-    path: string;
-    sdCard: string;
-    skin: string;
-    tagAbi: string;
-    target: string;
+interface DeviceInfo {
+    serial: string;
+    state: 'device' | 'offline' | 'connecting' | 'unknown';
+    avdName?: string;
+    product?: string;
+    model?: string;
+    device?: string;
+    transportId?: string;
+    isEmulator: boolean;
 }
 
 interface Module {
@@ -115,14 +115,91 @@ export class ASlAVDSelectorApp extends ASlElement {
 			.open-project-placeholder asl-button {
 				min-width: 180px;
 			}
+
+			.devices-section {
+				width: 100%;
+			}
+
+			.devices-list {
+				display: flex;
+				flex-direction: column;
+				gap: 0.25rem;
+				margin-top: 0.25rem;
+			}
+
+			.device-item {
+				display: flex;
+				align-items: center;
+				gap: 0.375rem;
+				padding: 0.25rem 0.375rem;
+				font-size: 0.75rem;
+				border-radius: 3px;
+				background-color: var(--vscode-list-hoverBackground, transparent);
+			}
+
+			.device-icon {
+				flex-shrink: 0;
+				width: 14px;
+				height: 14px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 0.75rem;
+			}
+
+			.device-serial {
+				font-family: var(--vscode-editor-font-family, monospace);
+				color: var(--vscode-editor-foreground);
+				flex: 1;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.device-name {
+				color: var(--vscode-descriptionForeground);
+				margin-left: 0.25rem;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				max-width: 120px;
+			}
+
+			.device-state {
+				flex-shrink: 0;
+				font-size: 0.6875rem;
+				padding: 0.0625rem 0.375rem;
+				border-radius: 3px;
+				font-weight: 500;
+			}
+
+			.device-state.device {
+				color: var(--vscode-testing-iconPassed, #4ec9b0);
+				background-color: color-mix(in srgb, var(--vscode-testing-iconPassed, #4ec9b0) 15%, transparent);
+			}
+
+			.device-state.offline,
+			.device-state.connecting {
+				color: var(--vscode-list-warningForeground, #cca700);
+				background-color: color-mix(in srgb, var(--vscode-list-warningForeground, #cca700) 15%, transparent);
+			}
+
+			.device-state.unknown {
+				color: var(--vscode-disabledForeground);
+				background-color: color-mix(in srgb, var(--vscode-disabledForeground) 10%, transparent);
+			}
+
+			.no-devices {
+				font-size: 0.75rem;
+				color: var(--vscode-descriptionForeground);
+				padding: 0.25rem 0.375rem;
+				font-style: italic;
+			}
 		`,
     ];
 
     @state()
-    private avds: AVD[] = [];
-
-    @state()
-    private selectedAVD: string = '';
+    private selectedDeviceSerial: string = '';
 
     @state()
     private modules: Module[] = [];
@@ -145,15 +222,30 @@ export class ASlAVDSelectorApp extends ASlElement {
     @state()
     private isAndroidProject: boolean = true;
 
+    @state()
+    private projectPath: string = '';
+
+    @state()
+    private devices: DeviceInfo[] = [];
+
     private vscode: any;
     private buildCancellationToken: string | null = null;
 
-    private get avdOptions(): DropdownOption[] {
-        return this.avds.map(avd => ({
-            value: avd.name,
-            label: avd.name,
-            avd,
-        }));
+    private get deviceOptions(): DropdownOption[] {
+        // Only show devices that are in 'device' state (ready to use)
+        const connected = this.devices.filter(d => d.state === 'device');
+        return connected.map(device => {
+            const label = device.model
+                ? `${device.model} (${device.serial})`
+                : device.avdName
+                    ? `${device.avdName} (${device.serial})`
+                    : device.serial;
+            return {
+                value: device.serial,
+                label,
+                device,
+            };
+        });
     }
 
     private get moduleOptions(): DropdownOption[] {
@@ -164,14 +256,15 @@ export class ASlAVDSelectorApp extends ASlElement {
         }));
     }
 
-    private handleAVDChange(e: CustomEvent) {
+    private handleDeviceChange(e: CustomEvent) {
         const { value } = e.detail;
-        if (value !== this.selectedAVD) {
-            this.selectedAVD = value;
+        if (value !== this.selectedDeviceSerial) {
+            this.selectedDeviceSerial = value;
+            const device = this.devices.find(d => d.serial === value);
             if (this.vscode) {
                 this.vscode.postMessage({
-                    type: 'select-avd',
-                    params: { avdName: value },
+                    type: 'select-device',
+                    params: { deviceSerial: value, avdName: device?.avdName },
                 });
             }
         }
@@ -191,7 +284,7 @@ export class ASlAVDSelectorApp extends ASlElement {
     }
 
     private handleRunClick() {
-        if (!this.selectedAVD || !this.selectedModule || this.isBuilding) {
+        if (!this.selectedDeviceSerial || !this.selectedModule || this.isBuilding) {
             return;
         }
 
@@ -200,10 +293,13 @@ export class ASlAVDSelectorApp extends ASlElement {
             this.buildCancellable = true;
             this.buildCancellationToken = `cancel-${Date.now()}`;
 
+            const device = this.devices.find(d => d.serial === this.selectedDeviceSerial);
+
             this.vscode.postMessage({
                 type: 'run-app',
                 params: {
-                    avdName: this.selectedAVD,
+                    deviceSerial: this.selectedDeviceSerial,
+                    avdName: device?.avdName,
                     moduleName: this.selectedModule,
                     cancellationToken: this.buildCancellationToken,
                 },
@@ -241,16 +337,6 @@ export class ASlAVDSelectorApp extends ASlElement {
     private handleMessage = (event: MessageEvent) => {
         const message = event.data;
         switch (message.type) {
-            case 'update-avds':
-                const { avds } = message.params || {};
-                if (avds) {
-                    this.avds = avds;
-                    // Select first AVD if none selected
-                    if (!this.selectedAVD && avds.length > 0) {
-                        this.selectedAVD = avds[0].name;
-                    }
-                }
-                break;
             case 'update-modules':
                 const { modules } = message.params || {};
                 if (modules) {
@@ -265,13 +351,9 @@ export class ASlAVDSelectorApp extends ASlElement {
                 // Handle bootstrap data from ready response
                 if (message.params && message.params.state) {
                     const state = message.params.state;
-                    if (state.avds) {
-                        this.avds = state.avds;
-                        if (state.selectedAVD) {
-                            this.selectedAVD = state.selectedAVD;
-                        } else if (this.avds.length > 0) {
-                            this.selectedAVD = this.avds[0].name;
-                        }
+                    if (state.devices) {
+                        this.devices = state.devices;
+                        this._autoSelectDevice();
                     }
                     if (state.modules) {
                         this.modules = state.modules;
@@ -283,6 +365,9 @@ export class ASlAVDSelectorApp extends ASlElement {
                     }
                     if (typeof state.logcatAvailable === 'boolean') {
                         this.logcatAvailable = state.logcatAvailable;
+                    }
+                    if (typeof state.projectPath === 'string') {
+                        this.projectPath = state.projectPath;
                     }
                 }
                 break;
@@ -306,13 +391,41 @@ export class ASlAVDSelectorApp extends ASlElement {
                     this.logcatActive = active;
                 }
                 break;
+            case 'update-devices':
+                const { devices } = message.params || {};
+                if (devices) {
+                    this.devices = devices;
+                    this._autoSelectDevice();
+                }
+                break;
             case 'update-android-project-state':
                 if (typeof message.params?.isAndroidProject === 'boolean') {
                     this.isAndroidProject = message.params.isAndroidProject;
                 }
+                if (typeof message.params?.projectPath === 'string') {
+                    this.projectPath = message.params.projectPath;
+                }
                 break;
         }
     };
+
+    /** Auto-select the first 'device' state device if none is currently selected. */
+    private _autoSelectDevice(): void {
+        if (this.selectedDeviceSerial) {
+            // Keep existing selection if still connected
+            const stillExists = this.devices.some(
+                d => d.serial === this.selectedDeviceSerial && d.state === 'device',
+            );
+            if (stillExists) return;
+        }
+        // Select first connected device
+        const connected = this.devices.filter(d => d.state === 'device');
+        if (connected.length > 0) {
+            this.selectedDeviceSerial = connected[0].serial;
+        } else {
+            this.selectedDeviceSerial = '';
+        }
+    }
 
     private handleOpenFolderClick() {
         if (this.vscode) {
@@ -331,9 +444,9 @@ export class ASlAVDSelectorApp extends ASlElement {
         // Listen for messages from extension
         window.addEventListener('message', this.handleMessage);
 
-        // Request initial AVD list and modules
+        // Request initial device list and modules
         if (this.vscode) {
-            this.vscode.postMessage({ type: 'refresh-avds' });
+            this.vscode.postMessage({ type: 'refresh-devices' });
             this.vscode.postMessage({ type: 'refresh-modules' });
         }
 
@@ -345,13 +458,9 @@ export class ASlAVDSelectorApp extends ASlElement {
                 const bootstrap = typeof bootstrapStr === 'string'
                     ? JSON.parse(atob(bootstrapStr))
                     : bootstrapStr;
-                if (bootstrap && bootstrap.avds) {
-                    this.avds = bootstrap.avds;
-                    if (bootstrap.selectedAVD) {
-                        this.selectedAVD = bootstrap.selectedAVD;
-                    } else if (this.avds.length > 0) {
-                        this.selectedAVD = this.avds[0].name;
-                    }
+                if (bootstrap && bootstrap.devices) {
+                    this.devices = bootstrap.devices;
+                    this._autoSelectDevice();
                 }
                 if (bootstrap && bootstrap.modules) {
                     this.modules = bootstrap.modules;
@@ -360,6 +469,9 @@ export class ASlAVDSelectorApp extends ASlElement {
                     } else if (this.modules.length > 0) {
                         this.selectedModule = this.modules[0].module;
                     }
+                }
+                if (typeof bootstrap?.projectPath === 'string') {
+                    this.projectPath = bootstrap.projectPath;
                 }
                 if (typeof bootstrap?.isAndroidProject === 'boolean') {
                     this.isAndroidProject = bootstrap.isAndroidProject;
@@ -405,12 +517,12 @@ export class ASlAVDSelectorApp extends ASlElement {
 				<h2 class="section-title">Android Studio Lite</h2>
 
 				<div class="dropdown-container">
-					<div class="dropdown-label">Select AVD</div>
+					<div class="dropdown-label">Select Device</div>
 					<asl-dropdown
-						.options=${this.avdOptions}
-						.value=${this.selectedAVD}
-						placeholder="No AVDs available"
-						@change=${this.handleAVDChange}
+						.options=${this.deviceOptions}
+						.value=${this.selectedDeviceSerial}
+						placeholder=${this.devices.length > 0 ? 'No connected devices' : 'No devices detected'}
+						@change=${this.handleDeviceChange}
 					></asl-dropdown>
 				</div>
 
@@ -428,7 +540,7 @@ export class ASlAVDSelectorApp extends ASlElement {
 					<asl-button
 						icon=${this.isBuilding ? progressSpinnerIcon : playIcon}
 						label=${this.isBuilding ? 'Building...' : 'Run'}
-						?disabled=${!this.selectedAVD || !this.selectedModule || this.isBuilding}
+						?disabled=${!this.selectedDeviceSerial || !this.selectedModule || this.isBuilding}
 						@button-click=${this.handleRunClick}
 					></asl-button>
 					<asl-button
