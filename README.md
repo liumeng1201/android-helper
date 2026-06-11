@@ -1,5 +1,9 @@
 # Android Helper
 
+基于 [krishna-kudari/android-studio-lite](https://github.com/krishna-kudari/android-studio-lite) 插件进行修改，调试设备列表里增加已连接的实体设备。
+
+A fork of [krishna-kudari/android-studio-lite](https://github.com/krishna-kudari/android-studio-lite) with added support for showing connected physical devices in the device list.
+
 You ain't going back to android studio for a while.
 
 <p align="center">
