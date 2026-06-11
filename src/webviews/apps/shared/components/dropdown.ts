@@ -215,6 +215,9 @@ export class ASlDropdown extends ASlElement {
 		e.stopPropagation();
 		if (!this.disabled) {
 			this.isOpen = !this.isOpen;
+			if (this.isOpen) {
+				this.dispatchEvent(new CustomEvent('dropdown-open', { bubbles: true, composed: true }));
+			}
 		}
 	}
 

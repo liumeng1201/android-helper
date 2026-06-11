@@ -105,6 +105,15 @@ export class DeviceManager implements Disposable {
         return Array.from(this.devices.values());
     }
 
+    /**
+     * Force a full refresh of device details by running `adb devices -l`.
+     * Useful when the user explicitly opens the device dropdown.
+     */
+    async refreshDevices(): Promise<void> {
+        await this.refreshDeviceDetails();
+        this._onDeviceListChanged.fire(this.getDevices());
+    }
+
     getDevice(serial: string): DeviceInfo | undefined {
         return this.devices.get(serial);
     }

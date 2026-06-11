@@ -122,7 +122,7 @@ export class AVDSelectorProvider implements WebviewProvider<AVDSelectorWebviewSt
         if (e.type === 'refresh-modules') {
             void this.sendModules();
         } else if (e.type === 'refresh-devices') {
-            void this.sendDeviceList();
+            void this.manager.deviceManager.refreshDevices().then(() => this.sendDeviceList());
         } else if (e.type === 'select-device') {
             const { deviceSerial, avdName } = e.params || {};
             if (deviceSerial) {

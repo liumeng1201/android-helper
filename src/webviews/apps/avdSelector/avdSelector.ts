@@ -270,6 +270,12 @@ export class ASlAVDSelectorApp extends ASlElement {
         }
     }
 
+    private handleDeviceDropdownOpen() {
+        if (this.vscode) {
+            this.vscode.postMessage({ type: 'refresh-devices' });
+        }
+    }
+
     private handleModuleChange(e: CustomEvent) {
         const { value } = e.detail;
         if (value !== this.selectedModule) {
@@ -523,6 +529,7 @@ export class ASlAVDSelectorApp extends ASlElement {
 						.value=${this.selectedDeviceSerial}
 						placeholder=${this.devices.length > 0 ? 'No connected devices' : 'No devices detected'}
 						@change=${this.handleDeviceChange}
+						@dropdown-open=${this.handleDeviceDropdownOpen}
 					></asl-dropdown>
 				</div>
 
